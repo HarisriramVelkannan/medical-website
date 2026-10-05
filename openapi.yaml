@@ -1,0 +1,241 @@
+openapi: 3.1.0
+info:
+  title: AuraCare Pharmacy & Medical Store API
+  description: >
+    RESTful API specification for AuraCare Medical Shop, including inventory management,
+    prescription OCR & verification, generic salt substitution, emergency SOS delivery,
+    and order dispatching.
+  version: 1.0.0
+  contact:
+    name: AuraCare Dispensary Services
+    email: api@auracare-pharma.com
+    url: https://auracare-pharma.com
+
+servers:
+  - url: https://api.auracare-pharma.com/v1
+    description: Production Medical Gateway
+  - url: http://localhost:3000/api
+    description: Local Development Server
+
+paths:
+  /medicines:
+    get:
+      summary: List pharmacy medicines and clinical supplies
+      description: Returns a paginated list of medicines with active chemical salts, stock levels, and Rx requirements.
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [all, prescription, chronic-care, otc-pain, devices, first-aid, baby-mom, vitamins]
+          description: Category filter
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Search by brand, salt composition, or indication
+        - name: requiresRx
+          in: query
+          schema:
+            type: boolean
+          description: Filter by prescription requirement
+      responses:
+        '200':
+          description: Successful retrieval of pharmacy inventory
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Medicine'
+
+  /prescriptions/upload:
+    post:
+      summary: Upload doctor prescription slip for verification
+      description: Ingests prescription image/document, executes OCR extraction, and queues for pharmacist audit.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                patientName:
+                  type: string
+                notes:
+                  type: string
+      responses:
+        '201':
+          description: Prescription uploaded and verified
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrescriptionVerificationResult'
+
+  /generics/substitute:
+    get:
+      summary: Find bio-equivalent generic salt alternatives
+      description: Returns verified generic formulations with identical active salts and price savings.
+      parameters:
+        - name: brandName
+          in: query
+          required: true
+          schema:
+            type: string
+          example: Lipitor 20mg
+      responses:
+        '200':
+          description: List of bio-equivalent alternatives
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericAlternative'
+
+  /orders:
+    post:
+      summary: Place a medical order
+      description: Creates a new order for delivery or store pickup.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderRequest'
+      responses:
+        '201':
+          description: Order confirmed and dispatched
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+
+components:
+  schemas:
+    Medicine:
+      type: object
+      properties:
+        id:
+          type: string
+          example: med-1
+        name:
+          type: string
+          example: Glucophage XR 500mg
+        genericName:
+          type: string
+          example: Metformin Hydrochloride (Extended Release)
+        category:
+          type: string
+          example: chronic-care
+        dosageForm:
+          type: string
+          example: Tablet
+        strength:
+          type: string
+          example: 500 mg
+        packSize:
+          type: string
+          example: Strip of 20 Tablets
+        price:
+          type: number
+          example: 4.80
+        mrp:
+          type: number
+          example: 6.00
+        requiresPrescription:
+          type: boolean
+          example: true
+        coldStorageRequired:
+          type: boolean
+          example: false
+        inStock:
+          type: boolean
+          example: true
+
+    PrescriptionVerificationResult:
+      type: object
+      properties:
+        prescriptionId:
+          type: string
+          example: rx-847291
+        status:
+          type: string
+          enum: [Verified, Pending Review, Rejected]
+          example: Verified
+        doctorRegNo:
+          type: string
+          example: MCI-REG-847291-C
+        extractedItems:
+          type: array
+          items:
+            type: object
+            properties:
+              medicineName:
+                type: string
+              dosage:
+                type: string
+              duration:
+                type: string
+
+    GenericAlternative:
+      type: object
+      properties:
+        brandName:
+          type: string
+          example: Lipitor 20mg
+        brandPrice:
+          type: number
+          example: 9.50
+        saltComposition:
+          type: string
+          example: Atorvastatin Calcium 20mg
+        genericName:
+          type: string
+          example: Atorvastatin Generics 20mg USP
+        genericPrice:
+          type: number
+          example: 3.20
+        savingsPercent:
+          type: number
+          example: 66
+
+    OrderRequest:
+      type: object
+      required:
+        - items
+        - deliveryType
+        - paymentMethod
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              medicineId:
+                type: string
+              quantity:
+                type: integer
+        deliveryType:
+          type: string
+          enum: [instant-sos, standard, pickup]
+        paymentMethod:
+          type: string
+          enum: [cod, card, upi]
+
+    OrderResponse:
+      type: object
+      properties:
+        orderId:
+          type: string
+          example: AC-582914
+        status:
+          type: string
+          example: Rx Verified by Pharmacist
+        estimatedDeliveryTime:
+          type: string
+          example: 35 minutes
+        total:
+          type: number
+          example: 18.50

@@ -1,0 +1,64 @@
+# AuraCare Pharmacy Operational & Dispensary Configuration
+pharmacy:
+  name: "AuraCare Pharmacy & Medical Store"
+  license:
+    drug_license_number: "DL-2026-MED-8492"
+    regulatory_authority: "State Pharmacy Council & Drug Enforcement Administration"
+    pharmacist_in_charge: "Dr. Nathan Reed, Pharm.D"
+    registration_expiry: "2029-12-31"
+
+  physical_store:
+    address: "450 Healthcare Boulevard, Suite 100-A"
+    city: "Springfield"
+    state: "IL"
+    postal_code: "62704"
+    operational_hours: "24/7/365"
+    has_drive_thru: true
+    cold_storage_capacity_liters: 1200
+
+  emergency_helpline:
+    toll_free: "1800-419-MEDS"
+    whatsapp_dispatch: "+1-555-019-4820"
+    email: "emergency-sos@auracare-pharma.com"
+
+delivery:
+  sos_express:
+    enabled: true
+    target_delivery_minutes: 45
+    priority_fee_usd: 2.99
+    max_radius_km: 15.0
+    covered_acute_categories:
+      - "respiratory_inhalers"
+      - "cardiac_nitrates"
+      - "insulin_antidiabetic"
+      - "high_grade_antipyretics"
+
+  standard_delivery:
+    free_delivery_threshold_usd: 25.00
+    base_fee_usd: 2.50
+    estimated_window_hours: "2-3"
+
+cold_chain_monitoring:
+  temperature_range_celsius:
+    min: 2.0
+    max: 8.0
+  telemetry_frequency_seconds: 60
+  packaging:
+    insulation: "Vacuum insulated thermo-flask"
+    coolant: "Phase-change reusable ice gel bricks"
+    tamper_proof_seal: true
+
+compliance:
+  schedule_h_requires_rx: true
+  schedule_x_prohibited_online: true
+  max_dispensation_days_per_rx: 90
+  digital_ocr_validation_level: "strict_pharmacist_review"
+
+promotions:
+  default_active_codes:
+    - code: "HEALTH20"
+      discount_percentage: 20
+      max_discount_usd: 50.00
+    - code: "FIRSTMED"
+      flat_discount_usd: 5.00
+      min_cart_value_usd: 15.00
