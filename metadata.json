@@ -1,0 +1,6 @@
+{
+  "name": "AuraCare Pharmacy & Medical Store",
+  "description": "Licensed 24/7 medical store offering genuine prescription medicines, OTC remedies, healthcare devices, prescription upload, and generic salt alternatives.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
